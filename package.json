@@ -28,11 +28,12 @@
     "husky": "^9.1.7",
     "jsdom": "^27.4.0",
     "lint-staged": "^16.2.7",
+    "prettier": "^3.8.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.0.17"
   },
   "lint-staged": {
-    "**/*.{js,ts,jsx,tsx,md,json}": "prettier --write"
+    "**/*.{js,ts,jsx,tsx,md,json}": "npx prettier --write"
   }
 }
