@@ -42,3 +42,7 @@ Ejemplo:
 2. Definir test de aceptación.
 3. Iterar (Rojo-Verde-Refactor).
 4. Push y Pull Request.
+
+## Respuestas
+
+Responde siempre en español
