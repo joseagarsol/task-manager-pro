@@ -45,4 +45,4 @@ Ejemplo:
 
 ## Respuestas
 
-Responde siempre en español
+Responde siempre en español independientemente del idioma en el que se haga la pregunta.
