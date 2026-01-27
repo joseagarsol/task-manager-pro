@@ -15,6 +15,8 @@ import {
   Circle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TaskCardProps {
   task: Task;
@@ -62,13 +64,26 @@ const getStatusConfig = (status: Task["status"]) => {
 };
 
 export default function TaskCard({ task }: TaskCardProps) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: task.id,
+  });
   const priorityConfig = getPriorityConfig(task.priority);
   const statusConfig = getStatusConfig(task.status);
   const PriorityIcon = priorityConfig.icon;
   const StatusIcon = statusConfig.icon;
 
+  const style = {
+    transform: CSS.Translate.toString(transform),
+  };
+
   return (
-    <Card className="hover:shadow-md transition-shadow duration-200">
+    <Card
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      style={style}
+      className="hover:shadow-md transition-shadow duration-200"
+    >
       <CardHeader className="pb-3 pt-5 px-5 space-y-0">
         <div className="flex justify-between items-start gap-4">
           <CardTitle className="text-base font-bold leading-tight">
