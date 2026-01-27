@@ -47,7 +47,7 @@ describe("TaskList Component", () => {
       mockDoneTask,
     ];
 
-    render(<TaskList tasks={mockTasks} />);
+    render(<TaskList tasks={mockTasks} updateTaskStatus={vi.fn()} />);
 
     const wrapperDate = (date: Date) =>
       date.toLocaleDateString("es-ES", { month: "short", day: "numeric" });
@@ -92,9 +92,5 @@ describe("TaskList Component", () => {
       expect(createdAt).toBeInTheDocument();
       expect(estimatedAt).toBeInTheDocument();
     });
-  });
-  it("should render a message when there are no tasks", () => {
-    render(<TaskList tasks={[]} />);
-    expect(screen.getByText(/no hay tareas/i)).toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useTask } from "@/features/tasks/hooks/useTask";
 import TaskList from "@/features/tasks/components/TaskList";
 import type { Task } from "@/features/tasks/types";
 import TaskDialog from "@/features/tasks/components/TaskDialog";
@@ -55,12 +55,12 @@ const mockTasks: Task[] = [
 ];
 
 export default function Home() {
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
+  const { tasks, addTask, updateTaskStatus } = useTask(mockTasks);
 
   const newTaskBtn = <Button variant="outline">Nueva Tarea</Button>;
 
   const handleSubmit = (task: Task) => {
-    setTasks([...tasks, task]);
+    addTask(task);
   };
 
   return (
@@ -68,7 +68,7 @@ export default function Home() {
       <h1 className="text-3xl font-bold text-gray-800">TaskList Preview</h1>
       <div className="w-full max-w-5xl">
         <TaskDialog trigger={newTaskBtn} handleSubmit={handleSubmit} />
-        <TaskList tasks={tasks} />
+        <TaskList tasks={tasks} updateTaskStatus={updateTaskStatus} />
       </div>
     </main>
   );

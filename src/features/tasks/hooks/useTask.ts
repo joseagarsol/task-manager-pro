@@ -12,8 +12,13 @@ export function useTask(initialTasks: Task[]) {
     );
   };
 
+  const addTask = (task: Task) => {
+    setTasks((prev) => [...prev, task]);
+  };
+
   return {
     tasks,
     updateTaskStatus,
+    addTask,
   };
 }
