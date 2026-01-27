@@ -93,4 +93,8 @@ describe("TaskList Component", () => {
       expect(estimatedAt).toBeInTheDocument();
     });
   });
+  it("should render a message when there are no tasks", () => {
+    render(<TaskList tasks={[]} />);
+    expect(screen.getByText(/no hay tareas/i)).toBeInTheDocument();
+  });
 });
