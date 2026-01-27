@@ -13,6 +13,7 @@ Desarrollar una aplicación de gestión de tareas tipo Kanban profesional, escal
 - **Testing:** Vitest, React Testing Library.
 - **Calidad:** ESLint, Prettier, Husky.
 - **CI/CD:** GitHub Actions.
+- **Validación:** Zod(4.3.6).
 
 ## Arquitectura (Feature-Based)
 
