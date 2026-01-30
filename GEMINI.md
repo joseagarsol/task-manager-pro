@@ -6,14 +6,15 @@ Desarrollar una aplicación de gestión de tareas tipo Kanban profesional, escal
 
 ## Tech Stack
 
-- **Core:** Next.js (App Router), TypeScript.
-- **Estilos:** Tailwind CSS, shadcn/ui.
-- **Estado/Lógica:** React Hooks, Context API (si es necesario).
-- **Drag & Drop:** @dnd-kit/core, @dnd-kit/sortable.
-- **Testing:** Vitest, React Testing Library.
-- **Calidad:** ESLint, Prettier, Husky.
+- **Core:** Next.js (16.1.4), React (19.2.3), TypeScript (5.x).
+- **Estilos:** Tailwind CSS (4.x), shadcn/ui.
+- **Estado/Lógica:** React Hooks, Context API.
+- **Drag & Drop:** @dnd-kit/core (6.3.1), @dnd-kit/utilities (3.2.2).
+- **Testing:** Vitest (4.0.17), React Testing Library (16.3.2).
+- **Calidad:** ESLint (9.x), Prettier (3.8.0), Husky (9.1.7).
 - **CI/CD:** GitHub Actions.
-- **Validación:** Zod(4.3.6).
+- **Validación:** Zod (4.3.6).
+- **ORM/BD:** Prisma (7.3.0), PostgreSQL.
 
 ## Arquitectura (Feature-Based)
 

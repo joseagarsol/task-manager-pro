@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Status {
+  Backlog
+  InProgress
+  Done
+}
+
+enum Priority {
+  High
+  Medium
+  Low
+}
+
+model Task {
+  id String @id @default(cuid())
+  title String
+  description String?
+  status Status @default(Backlog)
+  priority Priority @default(Low)
+  createdAt DateTime @default(now())
+  estimatedAt DateTime
+  columnOrder Int
+}
