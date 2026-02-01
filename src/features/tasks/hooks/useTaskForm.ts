@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Task } from "../types";
 import * as z from "zod";
+import { createTaskSchema } from "../schemas";
 
 export function useTaskForm(task: Task | undefined) {
   const [createdAt, setCreatedAt] = useState<Date | undefined>(
@@ -11,24 +12,7 @@ export function useTaskForm(task: Task | undefined) {
   );
   const [errors, setErrors] = useState<Partial<Record<keyof Task, string[]>>>();
 
-  const schema = z.object({
-    title: z.string().min(3, "El título es obligatorio"),
-    description: z.string().min(1, "La descripción es obligatoria"),
-    status: z.enum(["Backlog", "In Progress", "Done"]),
-    priority: z.enum(["Low", "Medium", "High"]),
-    createdAt: z.date({
-      error: (issue) =>
-        issue.input === undefined
-          ? "La fecha de creación es obligatoria"
-          : "Fecha inválida",
-    }),
-    estimatedAt: z.date({
-      error: (issue) =>
-        issue.input === undefined
-          ? "La fecha estimada es obligatoria"
-          : "Fecha inválida",
-    }),
-  });
+  const schema = createTaskSchema;
 
   type SchemaShape = typeof schema.shape;
   type FieldName = keyof SchemaShape;
@@ -38,7 +22,7 @@ export function useTaskForm(task: Task | undefined) {
     if (validation.success) {
       if (errors?.[key]) {
         setErrors((prevErrors) => {
-          const newErrors = { ...prevErrors };
+          const newErrors = { ...(prevErrors ? prevErrors : {}) };
           delete newErrors[key];
           return newErrors;
         });
@@ -72,7 +56,6 @@ export function useTaskForm(task: Task | undefined) {
 
     if (!validation.success) {
       const flattened = z.flattenError(validation.error);
-      console.log("El test fallo por esto: ", flattened.fieldErrors);
       const fieldErrors = flattened.fieldErrors as Partial<
         Record<keyof Task, string[]>
       >;
@@ -82,7 +65,7 @@ export function useTaskForm(task: Task | undefined) {
     }
 
     return {
-      id: "",
+      id: task?.id || "",
       title,
       description,
       status,

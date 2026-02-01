@@ -86,7 +86,7 @@ export default function TaskForm({
           <Textarea
             id="description"
             name="description"
-            defaultValue={task?.description}
+            defaultValue={task?.description || ""}
             aria-invalid={(errors?.description?.length ?? 0) > 0}
             onChange={(e) => validateField("description", e.target.value)}
           />

@@ -1,3 +1,4 @@
+import { createTask } from "../actions";
 import { Task } from "../types";
 import { useState } from "react";
 
@@ -12,8 +13,13 @@ export function useTask(initialTasks: Task[]) {
     );
   };
 
-  const addTask = (task: Task) => {
-    setTasks((prev) => [...prev, task]);
+  const addTask = async (task: Task) => {
+    try {
+      const newTask = await createTask(task);
+      setTasks((prev) => [...prev, newTask]);
+    } catch (error) {
+      console.error("Failed to create task", error);
+    }
   };
 
   return {
