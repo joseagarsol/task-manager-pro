@@ -6,6 +6,7 @@ export interface Task {
   title: string;
   description: string | null;
   status: Status;
+  columnOrder: number;
   priority: Priority;
   createdAt: Date;
   estimatedAt: Date;
