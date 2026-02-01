@@ -4,7 +4,7 @@ type Priority = "High" | "Medium" | "Low";
 export interface Task {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   status: Status;
   priority: Priority;
   createdAt: Date;
