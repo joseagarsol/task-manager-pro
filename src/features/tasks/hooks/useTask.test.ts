@@ -11,6 +11,7 @@ describe("useTask", () => {
         title: "Tarea 1",
         description: "Descripción 1",
         status: "Backlog",
+        columnOrder: 1,
         priority: "Low",
         createdAt: new Date(2026, 0, 24),
         estimatedAt: new Date(2026, 1, 28),
