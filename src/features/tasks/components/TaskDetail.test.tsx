@@ -2,9 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import TaskDetail from "./TaskDetail";
 import { render, screen } from "@testing-library/react";
 import type { Task } from "../types";
-
-const wrapperDate = (date: Date) =>
-  date.toLocaleDateString("es-ES", { month: "short", day: "numeric" });
+import { wrapperDate } from "@/lib/utils";
 
 describe("TaskDetail", () => {
   it("should render task detail", () => {
