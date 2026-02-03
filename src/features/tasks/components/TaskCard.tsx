@@ -78,6 +78,10 @@ export default function TaskCard({ task }: TaskCardProps) {
     transform: CSS.Translate.toString(transform),
   };
 
+  const handleDoubleClick = () => {
+    router.push(`/tasks/${task.id}`);
+  };
+
   return (
     <Card
       ref={setNodeRef}

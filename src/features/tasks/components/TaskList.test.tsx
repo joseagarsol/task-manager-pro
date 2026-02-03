@@ -13,15 +13,17 @@ vi.mock("../hooks/useTaskNavigation", () => ({
 describe("TaskList Component", () => {
   afterEach(() => {
     vi.useRealTimers();
+    vi.resetAllMocks();
   });
 
-  it("should render a list of tasks", () => {
+  it("Should render ColumnTask for each status", () => {
     vi.setSystemTime(new Date("January 24, 2026"));
 
     const mockHighPriorityTask: Task = {
       id: "1",
       title: "Diseñar base de datos",
       description: "Definir tablas y relaciones",
+      columnOrder: 1,
       status: "Backlog",
       priority: "High",
       createdAt: new Date(),
@@ -32,6 +34,7 @@ describe("TaskList Component", () => {
       id: "2",
       title: "Crear componentes UI",
       description: "Implementar botones y inputs",
+      columnOrder: 2,
       status: "In Progress",
       priority: "Medium",
       createdAt: new Date("2026-01-01"),
@@ -42,6 +45,7 @@ describe("TaskList Component", () => {
       id: "3",
       title: "Configurar CI/CD",
       description: "Github Actions para tests",
+      columnOrder: 3,
       status: "Done",
       priority: "Low",
       createdAt: new Date("2026-01-25"),
@@ -55,49 +59,6 @@ describe("TaskList Component", () => {
     ];
 
     render(<TaskList tasks={mockTasks} updateTaskStatus={vi.fn()} />);
-
-    const wrapperDate = (date: Date) =>
-      date.toLocaleDateString("es-ES", { month: "short", day: "numeric" });
-
-    const wrapperStatus = (status: Task["status"]) => {
-      switch (status) {
-        case "Done":
-          return "Completada";
-        case "In Progress":
-          return "En Progreso";
-        case "Backlog":
-          return "Pendiente";
-        default:
-          return status;
-      }
-    };
-
-    const wrapperPriority = (priority: Task["priority"]) => {
-      switch (priority) {
-        case "High":
-          return "Alta";
-        case "Medium":
-          return "Media";
-        case "Low":
-          return "Baja";
-        default:
-          return priority;
-      }
-    };
-
-    mockTasks.forEach((task) => {
-      const title = screen.getByText(task.title);
-      const description = screen.getByText(task.description);
-      const status = screen.getByText(wrapperStatus(task.status));
-      const priority = screen.getByText(wrapperPriority(task.priority));
-      const createdAt = screen.getByText(wrapperDate(task.createdAt));
-      const estimatedAt = screen.getByText(wrapperDate(task.estimatedAt));
-      expect(title).toBeInTheDocument();
-      expect(description).toBeInTheDocument();
-      expect(status).toBeInTheDocument();
-      expect(priority).toBeInTheDocument();
-      expect(createdAt).toBeInTheDocument();
-      expect(estimatedAt).toBeInTheDocument();
-    });
+    expect(screen.getAllByText("ColumnTask")).toHaveLength(3);
   });
 });

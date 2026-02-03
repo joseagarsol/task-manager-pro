@@ -15,6 +15,7 @@ vi.mock("../hooks/useTaskNavigation", () => ({
 describe("TaskCard Component", () => {
   afterEach(() => {
     vi.useRealTimers();
+    vi.clearAllMocks();
   });
 
   it("It should correctly render the task information", () => {
@@ -32,9 +33,6 @@ describe("TaskCard Component", () => {
     };
 
     render(<TaskCard task={mockTask} />);
-
-    const wrapperDate = (date: Date) =>
-      date.toLocaleDateString("es-ES", { month: "short", day: "numeric" });
 
     const title = screen.getByText(mockTask.title);
     const description = screen.getByText(mockTask.description!);
