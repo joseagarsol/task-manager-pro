@@ -1,7 +1,6 @@
 import prisma from "@/lib/prisma";
 import TasksPageClient from "@/features/tasks/components/TasksPageClient";
 import { Task } from "@/features/tasks/types";
-import { mapStatus } from "@/features/tasks/mappers";
 
 export default async function Home() {
   const tasks = await prisma.task.findMany({
@@ -12,7 +11,10 @@ export default async function Home() {
 
   const formattedTasks: Task[] = tasks.map((task) => ({
     ...task,
-    status: mapStatus(task.status),
+    status:
+      task.status === "InProgress"
+        ? "In Progress"
+        : (task.status as Task["status"]),
   }));
 
   return <TasksPageClient initialTasks={formattedTasks} />;
