@@ -22,9 +22,14 @@ export function useTask(initialTasks: Task[]) {
     }
   };
 
+  const getTaskById = (taskId: Task["id"]) => {
+    return tasks.find((task) => task.id === taskId);
+  };
+
   return {
     tasks,
     updateTaskStatus,
     addTask,
+    getTaskById,
   };
 }

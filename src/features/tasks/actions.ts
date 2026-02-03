@@ -7,6 +7,12 @@ import { Task } from "./types";
 
 import { createTaskSchema } from "./schemas";
 
+const reverseStatusMap: Record<string, Task["status"]> = {
+  Backlog: "Backlog",
+  InProgress: "In Progress",
+  Done: "Done",
+};
+
 export async function createTask(task: Task): Promise<Task> {
   const result = createTaskSchema.safeParse(task);
 
@@ -47,14 +53,25 @@ export async function createTask(task: Task): Promise<Task> {
 
   revalidatePath("/");
 
-  const reverseStatusMap: Record<string, Task["status"]> = {
-    Backlog: "Backlog",
-    InProgress: "In Progress",
-    Done: "Done",
-  };
-
   return {
     ...newTask,
     status: reverseStatusMap[newTask.status],
+  };
+}
+
+export async function getTask(taskId: Task["id"]): Promise<Task> {
+  const task = await prisma.task.findUnique({
+    where: {
+      id: taskId,
+    },
+  });
+
+  if (!task) {
+    throw new Error("Task not found");
+  }
+
+  return {
+    ...task,
+    status: reverseStatusMap[task.status],
   };
 }

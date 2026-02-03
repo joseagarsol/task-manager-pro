@@ -2,6 +2,15 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import TaskCard from "./TaskCard";
 import { Task } from "../types";
+import userEvent from "@testing-library/user-event";
+
+const mockOpenTask = vi.fn();
+
+vi.mock("../hooks/useTaskNavigation", () => ({
+  useTaskNavigation: () => ({
+    openTask: mockOpenTask,
+  }),
+}));
 
 describe("TaskCard Component", () => {
   afterEach(() => {
@@ -15,6 +24,7 @@ describe("TaskCard Component", () => {
       id: "123",
       title: "Diseñar base de datos",
       description: "Definir tablas y relaciones",
+      columnOrder: 1,
       status: "Backlog",
       priority: "High",
       createdAt: new Date(),
@@ -27,7 +37,7 @@ describe("TaskCard Component", () => {
       date.toLocaleDateString("es-ES", { month: "short", day: "numeric" });
 
     const title = screen.getByText(mockTask.title);
-    const description = screen.getByText(mockTask.description);
+    const description = screen.getByText(mockTask.description!);
     const status = screen.getByText("Pendiente");
     const priority = screen.getByText("Alta");
     const createdAt = screen.getByText(wrapperDate(mockTask.createdAt));
@@ -39,5 +49,27 @@ describe("TaskCard Component", () => {
     expect(priority).toBeInTheDocument();
     expect(createdAt).toBeInTheDocument();
     expect(estimatedAt).toBeInTheDocument();
+  });
+
+  it("Should call openTask when task is clicked", async () => {
+    vi.setSystemTime(new Date("January 20, 2026"));
+
+    const mockTask: Task = {
+      id: "123",
+      title: "Diseñar base de datos",
+      description: "Definir tablas y relaciones",
+      columnOrder: 1,
+      status: "Backlog",
+      priority: "High",
+      createdAt: new Date(),
+      estimatedAt: new Date("February 15, 2026"),
+    };
+
+    render(<TaskCard task={mockTask} />);
+
+    const title = screen.getByText(mockTask.title);
+    await userEvent.dblClick(title);
+
+    expect(mockOpenTask).toHaveBeenCalledWith(mockTask.id);
   });
 });

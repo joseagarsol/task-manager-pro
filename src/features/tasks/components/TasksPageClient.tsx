@@ -5,6 +5,7 @@ import TaskList from "@/features/tasks/components/TaskList";
 import type { Task } from "@/features/tasks/types";
 import TaskDialog from "@/features/tasks/components/TaskDialog";
 import { Button } from "@/components/ui/button";
+import TaskSheet from "./TaskSheet";
 
 interface TasksPageClientProps {
   initialTasks: Task[];
@@ -27,6 +28,7 @@ export default function TasksPageClient({
       <div className="w-full max-w-5xl">
         <TaskDialog trigger={newTaskBtn} handleSubmit={handleSubmit} />
         <TaskList tasks={tasks} updateTaskStatus={updateTaskStatus} />
+        <TaskSheet />
       </div>
     </main>
   );
