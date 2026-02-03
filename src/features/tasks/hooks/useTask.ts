@@ -1,4 +1,4 @@
-import { createTask } from "../actions";
+import { createTask, updateTask } from "../actions";
 import { Task } from "../types";
 import { useState } from "react";
 
@@ -22,6 +22,17 @@ export function useTask(initialTasks: Task[]) {
     }
   };
 
+  const editTask = async (taskToEdit: Task) => {
+    try {
+      const updatedTask = await updateTask(taskToEdit);
+      setTasks((prev) =>
+        prev.map((task) => (task.id === taskToEdit.id ? updatedTask : task)),
+      );
+    } catch (error) {
+      console.error("Failed to update task", error);
+    }
+  };
+
   const getTaskById = (taskId: Task["id"]) => {
     return tasks.find((task) => task.id === taskId);
   };
@@ -30,6 +41,7 @@ export function useTask(initialTasks: Task[]) {
     tasks,
     updateTaskStatus,
     addTask,
+    editTask,
     getTaskById,
   };
 }
