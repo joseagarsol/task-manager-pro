@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { useTaskNavigation } from "../hooks/useTaskNavigation";
 
 interface TaskCardProps {
   task: Task;
@@ -64,6 +65,7 @@ const getStatusConfig = (status: Task["status"]) => {
 };
 
 export default function TaskCard({ task }: TaskCardProps) {
+  const { openTask } = useTaskNavigation();
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: task.id,
   });
@@ -83,6 +85,7 @@ export default function TaskCard({ task }: TaskCardProps) {
       {...listeners}
       style={style}
       className="hover:shadow-md transition-shadow duration-200"
+      onDoubleClick={() => openTask(task.id)}
     >
       <CardHeader className="pb-3 pt-5 px-5 space-y-0">
         <div className="flex justify-between items-start gap-4">

@@ -3,6 +3,13 @@ import type { Task } from "@/features/tasks/types";
 import { render, screen } from "@testing-library/react";
 import TaskList from "./TaskList";
 
+// Mock para evitar error de useTaskNavigation en TaskCard
+vi.mock("../hooks/useTaskNavigation", () => ({
+  useTaskNavigation: () => ({
+    openTask: vi.fn(),
+  }),
+}));
+
 describe("TaskList Component", () => {
   afterEach(() => {
     vi.useRealTimers();
