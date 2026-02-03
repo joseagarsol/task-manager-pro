@@ -1,11 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useTask } from "./useTask";
+import { useTask, TaskProvider } from "./TaskContext";
 import { Task } from "../types";
+import { ReactNode } from "react";
 
 vi.mock("../actions", () => ({
   createTask: vi.fn(),
-  updateTask: vi.fn((task: Task) => Promise.resolve(task)),
+  updateTask: vi.fn((task) => Promise.resolve(task)),
 }));
 
 describe("useTask", () => {
@@ -23,7 +24,11 @@ describe("useTask", () => {
       },
     ];
 
-    const { result } = renderHook(() => useTask(mockTasks));
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <TaskProvider initialTasks={mockTasks}>{children}</TaskProvider>
+    );
+
+    const { result } = renderHook(() => useTask(), { wrapper });
 
     act(() => {
       result.current.updateTaskStatus(mockTasks[0].id, "In Progress");
@@ -46,7 +51,11 @@ describe("useTask", () => {
       },
     ];
 
-    const { result } = renderHook(() => useTask(mockTasks));
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <TaskProvider initialTasks={mockTasks}>{children}</TaskProvider>
+    );
+
+    const { result } = renderHook(() => useTask(), { wrapper });
 
     const updatedTaskData = {
       ...mockTasks[0],
