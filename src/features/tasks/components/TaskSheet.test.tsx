@@ -18,9 +18,10 @@ vi.mock("../actions", () => ({
     description: "Descripción de Prueba",
     status: "Backlog",
     columnOrder: 1,
-    priority: "Medium",
+    priority: "High",
     createdAt: new Date(),
     updatedAt: new Date(),
+    estimatedAt: new Date(),
   }),
 }));
 
@@ -28,11 +29,14 @@ describe("TaskSheet component", () => {
   it("should render task details when taskId is present", async () => {
     render(<TaskSheet />);
 
-    expect(screen.getByText("Cargando...")).toBeInTheDocument();
+    // Verificamos el nuevo texto de carga
+    expect(screen.getByText("Cargando detalles...")).toBeInTheDocument();
 
+    // Esperamos a que la promesa se resuelva y aparezca el contenido profesional
     await waitFor(() => {
       expect(screen.getByText("Tarea de Prueba")).toBeInTheDocument();
       expect(screen.getByText("Descripción de Prueba")).toBeInTheDocument();
+      expect(screen.getByText("Alta")).toBeInTheDocument();
     });
   });
 });
