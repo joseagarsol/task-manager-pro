@@ -84,3 +84,11 @@ export function useTask() {
   }
   return context;
 }
+
+export const useToggle = (initialState: boolean = false) => {
+  const [isOpen, setIsOpen] = useState(initialState);
+
+  const toggle = () => setIsOpen((prev) => !prev);
+
+  return { isOpen, toggle };
+};
