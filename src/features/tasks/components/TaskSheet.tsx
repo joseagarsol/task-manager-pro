@@ -6,6 +6,17 @@ import {
   SheetDescription,
   SheetFooter,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -107,13 +118,19 @@ const getStatusConfig = (status: Task["status"]) => {
 export default function TaskSheet() {
   const searchParams = useSearchParams();
   const { closeTask } = useTaskNavigation();
-  const { getTaskById, editTask } = useTask();
+  const { getTaskById, editTask, removeTask } = useTask();
 
   const taskId = searchParams.get("taskId");
 
   const task = taskId ? getTaskById(taskId) : undefined;
 
   const [isEditing, setIsEditing] = useState(false);
+
+  const handleDelete = async () => {
+    if (!taskId) return;
+    await removeTask(taskId);
+    closeTask();
+  };
 
   const handleUpdate = async (updatedTask: Task) => {
     await editTask(updatedTask);
@@ -279,6 +296,28 @@ export default function TaskSheet() {
           >
             Editar Tarea
           </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="w-full sm:w-auto">
+                Eliminar Tarea
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer. ¿Estás seguro de que deseas
+                  eliminar esta tarea?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>
+                  Eliminar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </SheetFooter>
       </div>
     );
