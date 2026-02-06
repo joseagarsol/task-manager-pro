@@ -1,4 +1,4 @@
-import { createTask, updateTask } from "../actions";
+import { createTask, updateTask, deleteTask } from "../actions";
 import { Task } from "../types";
 import {
   createContext,
@@ -14,6 +14,7 @@ interface TaskContextType {
   editTask: (task: Task) => Promise<void>;
   updateTaskStatus: (taskId: Task["id"], status: Task["status"]) => void;
   getTaskById: (taskId: Task["id"]) => Task | undefined;
+  removeTask: (taskId: Task["id"]) => Promise<void>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -62,6 +63,15 @@ export function TaskProvider({ children, initialTasks }: TaskProviderProps) {
     return tasks.find((task) => task.id === taskId);
   };
 
+  const removeTask = async (taskId: Task["id"]) => {
+    try {
+      const deletedTask = await deleteTask(taskId);
+      setTasks((prev) => prev.filter((task) => task.id !== deletedTask.id));
+    } catch (error) {
+      console.error("Failed to delete task", error);
+    }
+  };
+
   return (
     <TaskContext.Provider
       value={{
@@ -70,6 +80,7 @@ export function TaskProvider({ children, initialTasks }: TaskProviderProps) {
         editTask,
         updateTaskStatus,
         getTaskById,
+        removeTask,
       }}
     >
       {children}

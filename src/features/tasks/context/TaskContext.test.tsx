@@ -4,25 +4,26 @@ import { useTask, TaskProvider } from "./TaskContext";
 import { Task } from "../types";
 import { ReactNode } from "react";
 
+const mockTask: Task = {
+  id: "1",
+  title: "Tarea Original",
+  description: "Desc Original",
+  status: "Backlog",
+  columnOrder: 1,
+  priority: "Low",
+  createdAt: new Date(),
+  estimatedAt: new Date(),
+};
+
 vi.mock("../actions", () => ({
   createTask: vi.fn(),
   updateTask: vi.fn((task) => Promise.resolve(task)),
+  deleteTask: vi.fn((taskId) => Promise.resolve(mockTask)),
 }));
 
 describe("useTask", () => {
   it("should update the task status", () => {
-    const mockTasks: Task[] = [
-      {
-        id: "1",
-        title: "Tarea 1",
-        description: "Descripción 1",
-        status: "Backlog",
-        columnOrder: 1,
-        priority: "Low",
-        createdAt: new Date(2026, 0, 24),
-        estimatedAt: new Date(2026, 1, 28),
-      },
-    ];
+    const mockTasks: Task[] = [mockTask];
 
     const wrapper = ({ children }: { children: ReactNode }) => (
       <TaskProvider initialTasks={mockTasks}>{children}</TaskProvider>
@@ -38,18 +39,7 @@ describe("useTask", () => {
   });
 
   it("should update task details when editTask is called", async () => {
-    const mockTasks: Task[] = [
-      {
-        id: "1",
-        title: "Tarea Original",
-        description: "Desc Original",
-        status: "Backlog",
-        columnOrder: 1,
-        priority: "Low",
-        createdAt: new Date(),
-        estimatedAt: new Date(),
-      },
-    ];
+    const mockTasks: Task[] = [mockTask];
 
     const wrapper = ({ children }: { children: ReactNode }) => (
       <TaskProvider initialTasks={mockTasks}>{children}</TaskProvider>
@@ -67,5 +57,21 @@ describe("useTask", () => {
     });
 
     expect(result.current.tasks[0].title).toBe("Tarea Editada");
+  });
+
+  it("should delete task when deleteTask is called", async () => {
+    const mockTasks: Task[] = [mockTask];
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <TaskProvider initialTasks={mockTasks}>{children}</TaskProvider>
+    );
+
+    const { result } = renderHook(() => useTask(), { wrapper });
+
+    await act(async () => {
+      await result.current.removeTask(mockTasks[0].id);
+    });
+
+    expect(result.current.tasks).not.toContainEqual(mockTasks[0]);
   });
 });
