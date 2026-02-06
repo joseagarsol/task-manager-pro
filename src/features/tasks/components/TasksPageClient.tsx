@@ -1,6 +1,6 @@
 "use client";
 
-import { useTask } from "@/features/tasks/hooks/useTask";
+import { useTask, TaskProvider } from "@/features/tasks/context/TaskContext";
 import TaskList from "@/features/tasks/components/TaskList";
 import type { Task } from "@/features/tasks/types";
 import TaskDialog from "@/features/tasks/components/TaskDialog";
@@ -11,10 +11,9 @@ interface TasksPageClientProps {
   initialTasks: Task[];
 }
 
-export default function TasksPageClient({
-  initialTasks,
-}: TasksPageClientProps) {
-  const { tasks, addTask, updateTaskStatus } = useTask(initialTasks);
+// Componente interno que consume el contexto
+function TaskManagerContent() {
+  const { tasks, addTask, updateTaskStatus } = useTask();
 
   const newTaskBtn = <Button variant="outline">Nueva Tarea</Button>;
 
@@ -23,13 +22,24 @@ export default function TasksPageClient({
   };
 
   return (
+    <div className="w-full max-w-5xl">
+      <TaskDialog trigger={newTaskBtn} handleSubmit={handleSubmit} />
+      <TaskList tasks={tasks} updateTaskStatus={updateTaskStatus} />
+      <TaskSheet />
+    </div>
+  );
+}
+
+// Componente principal que provee el contexto
+export default function TasksPageClient({
+  initialTasks,
+}: TasksPageClientProps) {
+  return (
     <main className="min-h-screen p-8 bg-gray-50 flex flex-col items-center gap-8">
       <h1 className="text-3xl font-bold text-gray-800">TaskList Preview</h1>
-      <div className="w-full max-w-5xl">
-        <TaskDialog trigger={newTaskBtn} handleSubmit={handleSubmit} />
-        <TaskList tasks={tasks} updateTaskStatus={updateTaskStatus} />
-        <TaskSheet />
-      </div>
+      <TaskProvider initialTasks={initialTasks}>
+        <TaskManagerContent />
+      </TaskProvider>
     </main>
   );
 }

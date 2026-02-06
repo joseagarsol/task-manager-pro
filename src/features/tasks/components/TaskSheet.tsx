@@ -22,10 +22,11 @@ import {
 
 import { useSearchParams } from "next/navigation";
 import { useTaskNavigation } from "../hooks/useTaskNavigation";
-import { getTask } from "../actions";
-import { useEffect, useState } from "react";
+import { useTask } from "../context/TaskContext";
+import { useState } from "react";
 import { Task } from "../types";
 import { cn } from "@/lib/utils";
+import TaskForm from "./TaskForm";
 
 const formatDate = (date: Date) => {
   return new Intl.DateTimeFormat("es-ES", {
@@ -106,52 +107,33 @@ const getStatusConfig = (status: Task["status"]) => {
 export default function TaskSheet() {
   const searchParams = useSearchParams();
   const { closeTask } = useTaskNavigation();
+  const { getTaskById, editTask } = useTask();
 
   const taskId = searchParams.get("taskId");
 
-  const [task, setTask] = useState<Task | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const task = taskId ? getTaskById(taskId) : undefined;
 
-  useEffect(() => {
-    if (taskId) {
-      const fetchTask = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const data = await getTask(taskId);
-          setTask(data);
-        } catch (err) {
-          console.error(err);
-          setError("No se pudo cargar la tarea.");
-        } finally {
-          setLoading(false);
-        }
-      };
+  const [isEditing, setIsEditing] = useState(false);
 
-      fetchTask();
-    } else {
-      setTask(null);
-    }
-  }, [taskId]);
+  const handleUpdate = async (updatedTask: Task) => {
+    await editTask(updatedTask);
+    setIsEditing(false);
+  };
 
   const isOpen = !!taskId;
 
+  const [prevTaskId, setPrevTaskId] = useState<string | null>(taskId);
+
+  if (taskId !== prevTaskId) {
+    setPrevTaskId(taskId);
+    setIsEditing(false);
+  }
+
   const renderContent = () => {
-    if (loading) {
+    if (!task) {
       return (
         <div className="flex h-full flex-col items-center justify-center space-y-4 animate-in fade-in duration-300">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Cargando detalles...</p>
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="flex h-full flex-col items-center justify-center space-y-4">
-          <AlertCircle className="h-10 w-10 text-destructive" />
-          <p className="font-medium text-destructive">{error}</p>
+          <p className="text-sm text-muted-foreground">Tarea no encontrada.</p>
           <Button variant="outline" onClick={closeTask}>
             Cerrar
           </Button>
@@ -159,7 +141,35 @@ export default function TaskSheet() {
       );
     }
 
-    if (!task) return null;
+    if (isEditing) {
+      return (
+        <div className="flex flex-col h-full space-y-4 animate-in slide-in-from-right-2 duration-300">
+          <SheetHeader>
+            <SheetTitle>Editar Tarea</SheetTitle>
+            <SheetDescription>
+              Modifica los detalles de la tarea y presiona guardar.
+            </SheetDescription>
+          </SheetHeader>
+          <Separator />
+          <div className="flex-1 overflow-y-auto py-2 px-4">
+            <TaskForm
+              task={task}
+              handleSubmit={handleUpdate}
+              afterSubmit={() => {}}
+            />
+          </div>
+          <SheetFooter className="pt-4 border-t">
+            <Button
+              variant="ghost"
+              onClick={() => setIsEditing(false)}
+              className="w-full"
+            >
+              Cancelar
+            </Button>
+          </SheetFooter>
+        </div>
+      );
+    }
 
     const priorityConfig = getPriorityConfig(task.priority);
     const statusConfig = getStatusConfig(task.status);
@@ -167,7 +177,7 @@ export default function TaskSheet() {
     const StatusIcon = statusConfig.icon;
 
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full animate-in fade-in duration-300">
         <SheetHeader className="space-y-4 pb-4">
           <div className="flex items-center justify-between">
             <Badge
@@ -180,9 +190,9 @@ export default function TaskSheet() {
               <StatusIcon size={12} />
               {statusConfig.label}
             </Badge>
-            <div className="flex items-center gap-1 mr-12 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Hash size={12} />
-              <span className="font-mono">{task.id.slice(0, 8)}</span>
+              <span className="font-mono mr-12">{task.id.slice(0, 8)}</span>
             </div>
           </div>
 
@@ -198,7 +208,8 @@ export default function TaskSheet() {
 
         <Separator />
 
-        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8">
+        <div className="flex-1 overflow-y-auto py-6 space-y-8 p-4">
+          {/* Metadata Grid */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
@@ -236,6 +247,7 @@ export default function TaskSheet() {
             </div>
           </div>
 
+          {/* Description Section */}
           <div className="space-y-3">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <AlignLeft size={16} />
@@ -253,7 +265,7 @@ export default function TaskSheet() {
           </div>
         </div>
 
-        <SheetFooter className="pt-4 sm:justify-between">
+        <SheetFooter className="pt-4 sm:justify-between gap-2">
           <Button
             variant="ghost"
             onClick={closeTask}
@@ -261,7 +273,12 @@ export default function TaskSheet() {
           >
             Cerrar
           </Button>
-          <Button className="w-full sm:w-auto">Editar Tarea</Button>
+          <Button
+            className="w-full sm:w-auto"
+            onClick={() => setIsEditing(true)}
+          >
+            Editar Tarea
+          </Button>
         </SheetFooter>
       </div>
     );
@@ -271,7 +288,9 @@ export default function TaskSheet() {
     <Sheet
       open={isOpen}
       onOpenChange={(open) => {
-        if (!open) closeTask();
+        if (!open) {
+          closeTask();
+        }
       }}
     >
       <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl flex flex-col h-full border-l shadow-2xl">

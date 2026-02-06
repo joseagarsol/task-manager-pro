@@ -75,3 +75,45 @@ export async function getTask(taskId: Task["id"]): Promise<Task> {
     status: reverseStatusMap[task.status],
   };
 }
+
+export async function updateTask(task: Task): Promise<Task> {
+  const result = createTaskSchema.safeParse(task);
+
+  if (!result.success) {
+    throw new Error(
+      "Datos inválidos: " + JSON.stringify(z.treeifyError(result.error)),
+    );
+  }
+
+  const { title, description, status, priority, createdAt, estimatedAt } =
+    result.data;
+
+  const statusMap = {
+    Backlog: "Backlog",
+    "In Progress": "InProgress",
+    Done: "Done",
+  } as const;
+
+  const prismaStatus = statusMap[status];
+
+  const updatedTask = await prisma.task.update({
+    where: {
+      id: task.id,
+    },
+    data: {
+      title,
+      description,
+      status: prismaStatus,
+      priority,
+      createdAt,
+      estimatedAt,
+    },
+  });
+
+  revalidatePath("/");
+
+  return {
+    ...updatedTask,
+    status: reverseStatusMap[updatedTask.status],
+  };
+}
