@@ -117,3 +117,18 @@ export async function updateTask(task: Task): Promise<Task> {
     status: reverseStatusMap[updatedTask.status],
   };
 }
+
+export async function deleteTask(taskId: Task["id"]): Promise<Task> {
+  const deletedTask = await prisma.task.delete({
+    where: {
+      id: taskId,
+    },
+  });
+
+  revalidatePath("/");
+
+  return {
+    ...deletedTask,
+    status: reverseStatusMap[deletedTask.status],
+  };
+}

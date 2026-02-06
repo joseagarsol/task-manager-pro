@@ -59,6 +59,7 @@ describe("TaskSheet Component", () => {
   const mockCloseTask = vi.fn();
   const mockGetTaskById = vi.fn();
   const mockEditTask = vi.fn();
+  const mockRemoveTask = vi.fn();
   const mockSearchParams = new URLSearchParams() as ReadonlyURLSearchParams;
 
   beforeEach(() => {
@@ -75,6 +76,7 @@ describe("TaskSheet Component", () => {
       editTask: mockEditTask,
       updateTaskStatus: vi.fn(),
       getTaskById: mockGetTaskById,
+      removeTask: mockRemoveTask,
     });
 
     vi.mocked(useSearchParams).mockReturnValue(mockSearchParams);
@@ -236,5 +238,66 @@ describe("TaskSheet Component", () => {
     fireEvent.click(closeButton);
 
     expect(mockCloseTask).toHaveBeenCalled();
+  });
+
+  describe("delete action", () => {
+    it("Should render delete button", () => {
+      const params = new URLSearchParams();
+      params.set("taskId", "123");
+      vi.mocked(useSearchParams).mockReturnValue(
+        params as ReadonlyURLSearchParams,
+      );
+
+      const task = createMockTask();
+      mockGetTaskById.mockReturnValue(task);
+
+      render(<TaskSheet />);
+
+      expect(
+        screen.getByRole("button", { name: "Eliminar Tarea" }),
+      ).toBeInTheDocument();
+    });
+
+    it("should render cofirm dialog when delete button is clicked", () => {
+      const params = new URLSearchParams();
+      params.set("taskId", "123");
+      vi.mocked(useSearchParams).mockReturnValue(
+        params as ReadonlyURLSearchParams,
+      );
+
+      const task = createMockTask();
+      mockGetTaskById.mockReturnValue(task);
+
+      render(<TaskSheet />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Eliminar Tarea" }));
+
+      waitFor(() => {
+        expect(
+          screen.getByText("¿Estás seguro de que deseas eliminar esta tarea?"),
+        ).toBeInTheDocument();
+      });
+    });
+    it("should call removeTask and close sheet when confirm", async () => {
+      const params = new URLSearchParams();
+      params.set("taskId", "123");
+      vi.mocked(useSearchParams).mockReturnValue(
+        params as ReadonlyURLSearchParams,
+      );
+
+      const task = createMockTask();
+      mockGetTaskById.mockReturnValue(task);
+
+      render(<TaskSheet />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Eliminar Tarea" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "Eliminar" }));
+
+      await waitFor(() => {
+        expect(mockRemoveTask).toHaveBeenCalledWith("123");
+        expect(mockCloseTask).toHaveBeenCalled();
+      });
+    });
   });
 });
