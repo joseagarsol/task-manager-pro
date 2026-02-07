@@ -11,9 +11,8 @@ interface TasksPageClientProps {
   initialTasks: Task[];
 }
 
-// Componente interno que consume el contexto
 function TaskManagerContent() {
-  const { tasks, addTask, updateTaskStatus } = useTask();
+  const { tasks, addTask, editTaskStatus } = useTask();
 
   const newTaskBtn = <Button variant="outline">Nueva Tarea</Button>;
 
@@ -24,13 +23,12 @@ function TaskManagerContent() {
   return (
     <div className="w-full max-w-5xl">
       <TaskDialog trigger={newTaskBtn} handleSubmit={handleSubmit} />
-      <TaskList tasks={tasks} updateTaskStatus={updateTaskStatus} />
+      <TaskList tasks={tasks} updateTaskStatus={editTaskStatus} />
       <TaskSheet />
     </div>
   );
 }
 
-// Componente principal que provee el contexto
 export default function TasksPageClient({
   initialTasks,
 }: TasksPageClientProps) {

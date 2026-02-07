@@ -19,4 +19,7 @@ export const createTaskSchema = z.object({
   }),
 });
 
+export const statusSchema = z.enum(["Backlog", "In Progress", "Done"]);
+
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+export type StatusInput = z.infer<typeof statusSchema>;

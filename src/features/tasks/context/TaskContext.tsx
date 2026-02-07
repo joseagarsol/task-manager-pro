@@ -1,4 +1,9 @@
-import { createTask, updateTask, deleteTask } from "../actions";
+import {
+  createTask,
+  updateTask,
+  deleteTask,
+  updateTaskStatus,
+} from "../actions";
 import { Task } from "../types";
 import {
   createContext,
@@ -12,7 +17,7 @@ interface TaskContextType {
   tasks: Task[];
   addTask: (task: Task) => Promise<void>;
   editTask: (task: Task) => Promise<void>;
-  updateTaskStatus: (taskId: Task["id"], status: Task["status"]) => void;
+  editTaskStatus: (taskId: Task["id"], status: Task["status"]) => void;
   getTaskById: (taskId: Task["id"]) => Task | undefined;
   removeTask: (taskId: Task["id"]) => Promise<void>;
 }
@@ -31,12 +36,26 @@ export function TaskProvider({ children, initialTasks }: TaskProviderProps) {
     setTasks(initialTasks);
   }, [initialTasks]);
 
-  const updateTaskStatus = (taskId: Task["id"], status: Task["status"]) => {
+  const editTaskStatus = async (taskId: Task["id"], status: Task["status"]) => {
+    const task = tasks.find((t) => t.id === taskId);
+    const previousStatus = task?.status;
+
+    if (!previousStatus) return;
+
     setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, status } : task,
-      ),
+      prevTasks.map((t) => (t.id === taskId ? { ...t, status } : t)),
     );
+
+    try {
+      await updateTaskStatus(taskId, status);
+    } catch (error) {
+      console.error("Failed to update status", error);
+      setTasks((prevTasks) =>
+        prevTasks.map((t) =>
+          t.id === taskId ? { ...t, status: previousStatus } : t,
+        ),
+      );
+    }
   };
 
   const addTask = async (task: Task) => {
@@ -78,7 +97,7 @@ export function TaskProvider({ children, initialTasks }: TaskProviderProps) {
         tasks,
         addTask,
         editTask,
-        updateTaskStatus,
+        editTaskStatus,
         getTaskById,
         removeTask,
       }}
