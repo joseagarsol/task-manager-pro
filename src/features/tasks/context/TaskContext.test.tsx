@@ -19,10 +19,11 @@ vi.mock("../actions", () => ({
   createTask: vi.fn(),
   updateTask: vi.fn((task) => Promise.resolve(task)),
   deleteTask: vi.fn((taskId) => Promise.resolve(mockTask)),
+  updateTaskStatus: vi.fn((taskId, status) => Promise.resolve(mockTask)),
 }));
 
 describe("useTask", () => {
-  it("should update the task status", () => {
+  it("should update the task status", async () => {
     const mockTasks: Task[] = [mockTask];
 
     const wrapper = ({ children }: { children: ReactNode }) => (
@@ -31,11 +32,11 @@ describe("useTask", () => {
 
     const { result } = renderHook(() => useTask(), { wrapper });
 
-    act(() => {
-      result.current.updateTaskStatus(mockTasks[0].id, "In Progress");
+    await act(async () => {
+      await result.current.editTaskStatus(mockTasks[0].id, "Backlog");
     });
 
-    expect(result.current.tasks[0].status).toBe("In Progress");
+    expect(result.current.tasks[0].status).toBe("Backlog");
   });
 
   it("should update task details when editTask is called", async () => {

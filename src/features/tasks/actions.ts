@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Task } from "./types";
 
-import { createTaskSchema } from "./schemas";
+import { createTaskSchema, statusSchema } from "./schemas";
 
 const reverseStatusMap: Record<string, Task["status"]> = {
   Backlog: "Backlog",
@@ -130,5 +130,42 @@ export async function deleteTask(taskId: Task["id"]): Promise<Task> {
   return {
     ...deletedTask,
     status: reverseStatusMap[deletedTask.status],
+  };
+}
+
+export async function updateTaskStatus(
+  taskId: Task["id"],
+  status: Task["status"],
+) {
+  const result = statusSchema.safeParse(status);
+
+  if (!result.success) {
+    throw new Error(
+      "Datos inválidos: " + JSON.stringify(z.treeifyError(result.error)),
+    );
+  }
+
+  const statusMap = {
+    Backlog: "Backlog",
+    "In Progress": "InProgress",
+    Done: "Done",
+  } as const;
+
+  const prismaStatus = statusMap[status];
+
+  const updatedTask = await prisma.task.update({
+    where: {
+      id: taskId,
+    },
+    data: {
+      status: prismaStatus,
+    },
+  });
+
+  revalidatePath("/");
+
+  return {
+    ...updatedTask,
+    status: reverseStatusMap[updatedTask.status],
   };
 }
