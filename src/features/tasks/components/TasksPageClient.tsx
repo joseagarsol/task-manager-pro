@@ -12,7 +12,14 @@ interface TasksPageClientProps {
 }
 
 function TaskManagerContent() {
-  const { tasks, addTask, editTaskStatus } = useTask();
+  const {
+    tasks,
+    addTask,
+    editTaskStatus,
+    moveTaskToFilledColumn,
+    moveTaskToEmptyColumn,
+    reorderTasks,
+  } = useTask();
 
   const newTaskBtn = <Button variant="outline">Nueva Tarea</Button>;
 
@@ -23,7 +30,13 @@ function TaskManagerContent() {
   return (
     <div className="w-full max-w-5xl">
       <TaskDialog trigger={newTaskBtn} handleSubmit={handleSubmit} />
-      <TaskList tasks={tasks} updateTaskStatus={editTaskStatus} />
+      <TaskList
+        tasks={tasks}
+        editTaskStatus={editTaskStatus}
+        moveTaskToFilledColumn={moveTaskToFilledColumn}
+        moveTaskToEmptyColumn={moveTaskToEmptyColumn}
+        reorderTasks={reorderTasks}
+      />
       <TaskSheet />
     </div>
   );

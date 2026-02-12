@@ -1,22 +1,25 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   createTask,
   updateTask,
   getTask,
   deleteTask,
   updateTaskStatus,
+  updateTasksOrder,
 } from "./actions";
 import { Task } from "./types";
 import prisma from "@/lib/prisma";
 
 vi.mock("@/lib/prisma", () => ({
   default: {
+    $transaction: vi.fn(),
     task: {
       count: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       findUnique: vi.fn(),
       delete: vi.fn(),
+      updateMany: vi.fn(),
     },
   },
 }));
@@ -26,6 +29,10 @@ vi.mock("next/cache", () => ({
 }));
 
 describe("Actions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe("createTask", () => {
     it("should return error message if task is invalid", async () => {
       const task: Task = {
@@ -169,6 +176,15 @@ describe("Actions", () => {
         estimatedAt: new Date(),
       };
 
+      //Mock findUnique
+      vi.mocked(prisma.task.findUnique).mockResolvedValue({
+        ...task,
+        status: "InProgress",
+      });
+
+      //Mock transaction
+      vi.mocked(prisma.$transaction);
+
       vi.mocked(prisma.task.delete).mockResolvedValue({
         ...task,
         status: "InProgress",
@@ -220,6 +236,57 @@ describe("Actions", () => {
         data: {
           status: "InProgress",
         },
+      });
+    });
+  });
+  describe("updateTasksOrder", () => {
+    it("should return error if tasks are invalid", async () => {
+      const tasks = [{ id: "1", columnOrder: 0 }];
+
+      await expect(updateTasksOrder(tasks as Task[])).rejects.toThrow(
+        "Datos inválidos: ",
+      );
+    });
+
+    it("should call prisma transaction with multiple updates", async () => {
+      const tasks: Task[] = [
+        {
+          id: "1",
+          columnOrder: 1,
+          status: "Backlog",
+          title: "T1",
+          description: "",
+          priority: "Low",
+          createdAt: new Date(),
+          estimatedAt: new Date(),
+        },
+        {
+          id: "2",
+          columnOrder: 2,
+          status: "Backlog",
+          title: "T2",
+          description: "",
+          priority: "Low",
+          createdAt: new Date(),
+          estimatedAt: new Date(),
+        },
+      ];
+
+      vi.mocked(prisma.$transaction).mockResolvedValue(
+        tasks.map((t) => ({ ...t, status: "Backlog" })),
+      );
+
+      await updateTasksOrder(tasks);
+
+      expect(prisma.$transaction).toHaveBeenCalled();
+      expect(prisma.task.update).toHaveBeenCalledTimes(2);
+      expect(prisma.task.update).toHaveBeenNthCalledWith(1, {
+        where: { id: "1" },
+        data: { columnOrder: 1, status: "Backlog" },
+      });
+      expect(prisma.task.update).toHaveBeenNthCalledWith(2, {
+        where: { id: "2" },
+        data: { columnOrder: 2, status: "Backlog" },
       });
     });
   });

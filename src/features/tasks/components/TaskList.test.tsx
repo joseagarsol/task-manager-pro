@@ -3,7 +3,6 @@ import type { Task } from "@/features/tasks/types";
 import { render, screen } from "@testing-library/react";
 import TaskList from "./TaskList";
 
-// Mock para evitar error de useTaskNavigation en TaskCard
 vi.mock("../hooks/useTaskNavigation", () => ({
   useTaskNavigation: () => ({
     openTask: vi.fn(),
@@ -22,6 +21,7 @@ describe("TaskList Component", () => {
       id: "1",
       title: "Diseñar base de datos",
       description: "Definir tablas y relaciones",
+      columnOrder: 1,
       status: "Backlog",
       priority: "High",
       createdAt: new Date(),
@@ -33,6 +33,7 @@ describe("TaskList Component", () => {
       title: "Crear componentes UI",
       description: "Implementar botones y inputs",
       status: "In Progress",
+      columnOrder: 1,
       priority: "Medium",
       createdAt: new Date("2026-01-01"),
       estimatedAt: new Date("2026-02-20"),
@@ -43,6 +44,7 @@ describe("TaskList Component", () => {
       title: "Configurar CI/CD",
       description: "Github Actions para tests",
       status: "Done",
+      columnOrder: 1,
       priority: "Low",
       createdAt: new Date("2026-01-25"),
       estimatedAt: new Date("2026-02-06"),
@@ -54,7 +56,15 @@ describe("TaskList Component", () => {
       mockDoneTask,
     ];
 
-    render(<TaskList tasks={mockTasks} updateTaskStatus={vi.fn()} />);
+    render(
+      <TaskList
+        tasks={mockTasks}
+        editTaskStatus={vi.fn()}
+        moveTaskToFilledColumn={vi.fn()}
+        moveTaskToEmptyColumn={vi.fn()}
+        reorderTasks={vi.fn()}
+      />,
+    );
 
     const wrapperDate = (date: Date) =>
       date.toLocaleDateString("es-ES", { month: "short", day: "numeric" });
@@ -87,7 +97,7 @@ describe("TaskList Component", () => {
 
     mockTasks.forEach((task) => {
       const title = screen.getByText(task.title);
-      const description = screen.getByText(task.description);
+      const description = screen.getByText(task.description!);
       const status = screen.getByText(wrapperStatus(task.status));
       const priority = screen.getByText(wrapperPriority(task.priority));
       const createdAt = screen.getByText(wrapperDate(task.createdAt));

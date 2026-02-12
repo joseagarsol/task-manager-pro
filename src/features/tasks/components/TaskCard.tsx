@@ -15,9 +15,9 @@ import {
   Circle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useTaskNavigation } from "../hooks/useTaskNavigation";
+import { useSortable } from "@dnd-kit/sortable";
 
 interface TaskCardProps {
   task: Task;
@@ -66,9 +66,13 @@ const getStatusConfig = (status: Task["status"]) => {
 
 export default function TaskCard({ task }: TaskCardProps) {
   const { openTask } = useTaskNavigation();
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: task.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id: task.id,
+      data: {
+        task,
+      },
+    });
   const priorityConfig = getPriorityConfig(task.priority);
   const statusConfig = getStatusConfig(task.status);
   const PriorityIcon = priorityConfig.icon;
@@ -76,6 +80,7 @@ export default function TaskCard({ task }: TaskCardProps) {
 
   const style = {
     transform: CSS.Translate.toString(transform),
+    transition,
   };
 
   return (

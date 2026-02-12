@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Task } from "./types";
 
-import { createTaskSchema, statusSchema } from "./schemas";
+import { createTaskSchema, statusSchema, updateOrderSchema } from "./schemas";
 
 const reverseStatusMap: Record<string, Task["status"]> = {
   Backlog: "Backlog",
@@ -119,17 +119,41 @@ export async function updateTask(task: Task): Promise<Task> {
 }
 
 export async function deleteTask(taskId: Task["id"]): Promise<Task> {
-  const deletedTask = await prisma.task.delete({
-    where: {
-      id: taskId,
-    },
+  const taskToDelete = await prisma.task.findUnique({
+    where: { id: taskId },
   });
+
+  if (!taskToDelete) {
+    throw new Error("Task not found");
+  }
+
+  await prisma.$transaction([
+    prisma.task.delete({
+      where: {
+        id: taskId,
+      },
+    }),
+
+    prisma.task.updateMany({
+      where: {
+        status: taskToDelete.status,
+        columnOrder: {
+          gt: taskToDelete.columnOrder,
+        },
+      },
+      data: {
+        columnOrder: {
+          decrement: 1,
+        },
+      },
+    }),
+  ]);
 
   revalidatePath("/");
 
   return {
-    ...deletedTask,
-    status: reverseStatusMap[deletedTask.status],
+    ...taskToDelete,
+    status: reverseStatusMap[taskToDelete.status],
   };
 }
 
@@ -168,4 +192,39 @@ export async function updateTaskStatus(
     ...updatedTask,
     status: reverseStatusMap[updatedTask.status],
   };
+}
+
+export async function updateTasksOrder(tasks: Task[]) {
+  const result = updateOrderSchema.safeParse(tasks);
+
+  if (!result.success) {
+    throw new Error(
+      "Datos inválidos: " + JSON.stringify(z.treeifyError(result.error)),
+    );
+  }
+
+  const statusMap = {
+    Backlog: "Backlog",
+    "In Progress": "InProgress",
+    Done: "Done",
+  } as const;
+
+  const transaction = tasks.map((task) => {
+    const prismaStatus = statusMap[task.status];
+    return prisma.task.update({
+      where: {
+        id: task.id,
+      },
+      data: {
+        columnOrder: task.columnOrder,
+        status: prismaStatus,
+      },
+    });
+  });
+
+  const updatedTasks = await prisma.$transaction(transaction);
+
+  revalidatePath("/");
+
+  return updatedTasks;
 }
