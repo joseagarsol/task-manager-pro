@@ -21,5 +21,13 @@ export const createTaskSchema = z.object({
 
 export const statusSchema = z.enum(["Backlog", "In Progress", "Done"]);
 
+export const updateOrderSchema = z.array(
+  z.object({
+    id: z.string(),
+    columnOrder: z.number().int().min(1),
+  }),
+);
+
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type StatusInput = z.infer<typeof statusSchema>;
+export type UpdateOrderInput = z.infer<typeof updateOrderSchema>;

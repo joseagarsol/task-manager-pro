@@ -226,7 +226,6 @@ export default function TaskSheet() {
         <Separator />
 
         <div className="flex-1 overflow-y-auto py-6 space-y-8 p-4">
-          {/* Metadata Grid */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
@@ -264,7 +263,6 @@ export default function TaskSheet() {
             </div>
           </div>
 
-          {/* Description Section */}
           <div className="space-y-3">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <AlignLeft size={16} />

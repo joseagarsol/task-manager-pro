@@ -3,6 +3,7 @@ import {
   updateTask,
   deleteTask,
   updateTaskStatus,
+  updateTasksOrder,
 } from "../actions";
 import { Task } from "../types";
 import {
@@ -12,14 +13,18 @@ import {
   ReactNode,
   useEffect,
 } from "react";
+import { arrayMove } from "@dnd-kit/sortable";
 
 interface TaskContextType {
   tasks: Task[];
   addTask: (task: Task) => Promise<void>;
   editTask: (task: Task) => Promise<void>;
-  editTaskStatus: (taskId: Task["id"], status: Task["status"]) => void;
+  editTaskStatus: (taskId: Task["id"], status: Task["status"]) => Promise<void>;
   getTaskById: (taskId: Task["id"]) => Task | undefined;
   removeTask: (taskId: Task["id"]) => Promise<void>;
+  moveTaskToFilledColumn: (activeTask: Task, overTask: Task) => Promise<void>;
+  moveTaskToEmptyColumn: (activeTask: Task, status: Task["status"]) => void;
+  reorderTasks: (activeTask: Task, overTask?: Task) => Promise<void>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -36,23 +41,17 @@ export function TaskProvider({ children, initialTasks }: TaskProviderProps) {
     setTasks(initialTasks);
   }, [initialTasks]);
 
-  const editTaskStatus = async (taskId: Task["id"], status: Task["status"]) => {
-    const task = tasks.find((t) => t.id === taskId);
-    const previousStatus = task?.status;
-
-    if (!previousStatus) return;
-
-    setTasks((prevTasks) =>
-      prevTasks.map((t) => (t.id === taskId ? { ...t, status } : t)),
-    );
-
+  const editTaskStatus = async (
+    activeTaskId: Task["id"],
+    status: Task["status"],
+  ) => {
     try {
-      await updateTaskStatus(taskId, status);
+      await updateTaskStatus(activeTaskId, status);
     } catch (error) {
       console.error("Failed to update status", error);
       setTasks((prevTasks) =>
         prevTasks.map((t) =>
-          t.id === taskId ? { ...t, status: previousStatus } : t,
+          t.id === activeTaskId ? { ...t, status: status } : t,
         ),
       );
     }
@@ -60,7 +59,14 @@ export function TaskProvider({ children, initialTasks }: TaskProviderProps) {
 
   const addTask = async (task: Task) => {
     try {
-      const newTask = await createTask(task);
+      const taskColumn = tasks
+        .filter((t) => t.status === task.status)
+        .sort((a, b) => a.columnOrder - b.columnOrder);
+
+      const newTask = await createTask({
+        ...task,
+        columnOrder: taskColumn.length + 1,
+      });
       setTasks((prev) => [...prev, newTask]);
     } catch (error) {
       console.error("Failed to create task", error);
@@ -83,11 +89,105 @@ export function TaskProvider({ children, initialTasks }: TaskProviderProps) {
   };
 
   const removeTask = async (taskId: Task["id"]) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    setTasks((prev) => {
+      const taskColumn = prev
+        .filter((t) => t.status === task.status)
+        .sort((a, b) => a.columnOrder - b.columnOrder);
+
+      const updatedTasks = taskColumn.map((t) => {
+        if (t.columnOrder > task.columnOrder) {
+          return { ...t, columnOrder: t.columnOrder - 1 };
+        }
+        return t;
+      });
+
+      const taskColumnWithoutDeletedTask = updatedTasks.filter(
+        (t) => t.id !== task.id,
+      );
+
+      const otherTasks = prev.filter((t) => t.status !== task.status);
+
+      return [...otherTasks, ...taskColumnWithoutDeletedTask];
+    });
     try {
-      const deletedTask = await deleteTask(taskId);
-      setTasks((prev) => prev.filter((task) => task.id !== deletedTask.id));
+      await deleteTask(taskId);
     } catch (error) {
       console.error("Failed to delete task", error);
+    }
+  };
+
+  const moveTaskToFilledColumn = async (activeTask: Task, overTask: Task) => {
+    setTasks((prevTasks) => {
+      const activeIndex = prevTasks.findIndex((t) => t.id === activeTask.id);
+      const overIndex = prevTasks.findIndex((t) => t.id === overTask.id);
+
+      if (activeIndex === -1 || overIndex === -1) return prevTasks;
+
+      const activeTaskUpdated = { ...activeTask, status: overTask.status };
+
+      const updatedTasks = prevTasks.map((t) =>
+        t.id === activeTask.id ? activeTaskUpdated : t,
+      );
+
+      return arrayMove(updatedTasks, activeIndex, overIndex);
+    });
+  };
+
+  const moveTaskToEmptyColumn = (activeTask: Task, status: Task["status"]) => {
+    setTasks((prevTasks) => {
+      const activeTaskUpdated = { ...activeTask, status };
+      const updatedTasks = prevTasks.map((t) =>
+        t.id === activeTask.id ? activeTaskUpdated : t,
+      );
+      return updatedTasks;
+    });
+  };
+
+  const reorderTasks = async (activeTask: Task, overTask?: Task) => {
+    if (overTask) {
+      const taskColumn = tasks
+        .filter((t) => t.status === overTask.status)
+        .sort((a, b) => a.columnOrder - b.columnOrder);
+
+      const activeIndex = taskColumn.findIndex((t) => t.id === activeTask.id);
+      const overIndex = taskColumn.findIndex((t) => t.id === overTask.id);
+
+      const movedTasks = arrayMove(taskColumn, activeIndex, overIndex);
+
+      const taskInColumnWithNewOrder = movedTasks.map((t, index) => ({
+        ...t,
+        columnOrder: index + 1,
+        status: overTask.status,
+      }));
+
+      const otherTasks = tasks.filter((t) => t.status !== overTask.status);
+      const newTasks = [...otherTasks, ...taskInColumnWithNewOrder];
+
+      setTasks(newTasks);
+
+      try {
+        await updateTasksOrder(taskInColumnWithNewOrder);
+      } catch (error) {
+        console.error("Failed to update tasks order", error);
+      }
+      return;
+    }
+
+    const movedTask = { ...activeTask, columnOrder: 1 };
+    const movedTasks = tasks.map((t) => {
+      if (t.id === activeTask.id) {
+        return movedTask;
+      }
+      return t;
+    });
+    setTasks(movedTasks);
+
+    try {
+      await updateTasksOrder([movedTask]);
+    } catch (error) {
+      console.error("Failed to update tasks order", error);
     }
   };
 
@@ -100,6 +200,9 @@ export function TaskProvider({ children, initialTasks }: TaskProviderProps) {
         editTaskStatus,
         getTaskById,
         removeTask,
+        moveTaskToFilledColumn,
+        moveTaskToEmptyColumn,
+        reorderTasks,
       }}
     >
       {children}
