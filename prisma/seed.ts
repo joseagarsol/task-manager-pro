@@ -1,6 +1,7 @@
 import { PrismaClient, Prisma } from "../src/app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -29,10 +30,22 @@ const tasksData: Prisma.TaskCreateInput[] = [
   },
 ];
 
+const usersData: Prisma.UserCreateInput = {
+  name: "Admin",
+  email: "admin@admin.com",
+  password: "123456",
+};
+
 export async function main() {
-  for (const taskData of tasksData) {
-    await prisma.task.create({ data: taskData });
-  }
+  // for (const taskData of tasksData) {
+  //   await prisma.task.create({ data: taskData });
+  // }
+
+  const passwordHash = await bcrypt.hash(usersData.password, 10);
+
+  await prisma.user.create({
+    data: { ...usersData, password: passwordHash },
+  });
 }
 
 main();
