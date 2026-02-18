@@ -70,6 +70,7 @@ export default function LoginForm() {
                 aria-invalid={fieldState.invalid}
                 placeholder="Password"
                 autoComplete="off"
+                type="password"
               />
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>

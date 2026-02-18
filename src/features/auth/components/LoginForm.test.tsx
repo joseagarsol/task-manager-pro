@@ -35,7 +35,7 @@ describe("LoginForm", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/el correo electrónico es requerido/i),
+          screen.getByText(/correo electrónico inválido/i),
         ).toBeInTheDocument();
         expect(
           screen.getByText(/la contraseña debe tener al menos 6 caracteres/i),
