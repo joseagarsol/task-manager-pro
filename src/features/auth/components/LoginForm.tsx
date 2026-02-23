@@ -11,8 +11,8 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { login } from "@/features/auth/actions";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -27,8 +27,12 @@ export default function LoginForm() {
   });
 
   async function onSubmit(data: LoginSchema) {
-    const response = await login(data);
-    if (response.error) {
+    const response = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+    });
+    if (response?.error) {
       form.setError("root.serverError", {
         type: "server",
         message: response.error,
@@ -36,6 +40,7 @@ export default function LoginForm() {
       return;
     }
     router.push("/");
+    router.refresh();
   }
 
   return (
