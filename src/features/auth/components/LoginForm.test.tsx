@@ -1,18 +1,20 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { screen, fireEvent, render, waitFor } from "@testing-library/react";
 import LoginForm from "./LoginForm";
-import { login } from "../actions";
+//import { login } from "../actions";
+import { signIn } from "next-auth/react";
 
 const mockPush = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
+    refresh: vi.fn(),
   }),
 }));
 
-vi.mock("@/features/auth/actions", () => ({
-  login: vi.fn(),
+vi.mock("next-auth/react", () => ({
+  signIn: vi.fn(),
 }));
 
 describe("LoginForm", () => {
@@ -65,9 +67,12 @@ describe("LoginForm", () => {
 
   describe("Login action", () => {
     it("Should call login action with email and password", async () => {
-      const loginMock = vi.mocked(login).mockResolvedValue({
-        success: true,
-        user: { id: "1", name: "Test", email: "test@test.com" },
+      const loginMock = vi.mocked(signIn).mockResolvedValue({
+        error: undefined,
+        code: undefined,
+        status: 200,
+        ok: true,
+        url: "/",
       });
 
       render(<LoginForm />);
@@ -83,17 +88,21 @@ describe("LoginForm", () => {
 
       await waitFor(() => {
         expect(loginMock).toHaveBeenCalledTimes(1);
-        expect(loginMock).toHaveBeenCalledWith({
+        expect(loginMock).toHaveBeenCalledWith("credentials", {
           email: "test@test.com",
           password: "password",
+          redirect: false,
         });
       });
     });
 
     it("Should show error message when login fails", async () => {
-      vi.mocked(login).mockResolvedValue({
-        success: false,
+      vi.mocked(signIn).mockResolvedValue({
         error: "Datos inválidos",
+        code: undefined,
+        status: 401,
+        ok: false,
+        url: null,
       });
 
       render(<LoginForm />);
@@ -113,9 +122,12 @@ describe("LoginForm", () => {
     });
 
     it("Should redirect to home page when login is successful", async () => {
-      vi.mocked(login).mockResolvedValue({
-        success: true,
-        user: { id: "1", name: "Test", email: "test@test.com" },
+      vi.mocked(signIn).mockResolvedValue({
+        error: undefined,
+        code: undefined,
+        status: 200,
+        ok: true,
+        url: "/",
       });
 
       render(<LoginForm />);
