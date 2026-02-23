@@ -21,22 +21,27 @@ function TaskManagerContent() {
     reorderTasks,
   } = useTask();
 
-  const newTaskBtn = <Button variant="outline">Nueva Tarea</Button>;
+  const newTaskBtn = <Button>Nueva Tarea</Button>;
 
   const handleSubmit = (task: Task) => {
     addTask(task);
   };
 
   return (
-    <div className="w-full max-w-5xl">
-      <TaskDialog trigger={newTaskBtn} handleSubmit={handleSubmit} />
-      <TaskList
-        tasks={tasks}
-        editTaskStatus={editTaskStatus}
-        moveTaskToFilledColumn={moveTaskToFilledColumn}
-        moveTaskToEmptyColumn={moveTaskToEmptyColumn}
-        reorderTasks={reorderTasks}
-      />
+    <div className="flex h-full flex-col gap-4">
+      <div className="flex items-center justify-between px-2">
+        <h1 className="text-2xl font-bold">Tablero</h1>
+        <TaskDialog trigger={newTaskBtn} handleSubmit={handleSubmit} />
+      </div>
+      <div className="flex-1 min-h-0 overflow-x-auto">
+        <TaskList
+          tasks={tasks}
+          editTaskStatus={editTaskStatus}
+          moveTaskToFilledColumn={moveTaskToFilledColumn}
+          moveTaskToEmptyColumn={moveTaskToEmptyColumn}
+          reorderTasks={reorderTasks}
+        />
+      </div>
       <TaskSheet />
     </div>
   );
@@ -46,11 +51,10 @@ export default function TasksPageClient({
   initialTasks,
 }: TasksPageClientProps) {
   return (
-    <main className="min-h-screen p-8 bg-gray-50 flex flex-col items-center gap-8">
-      <h1 className="text-3xl font-bold text-gray-800">TaskList Preview</h1>
+    <div className="h-full w-full">
       <TaskProvider initialTasks={initialTasks}>
         <TaskManagerContent />
       </TaskProvider>
-    </main>
+    </div>
   );
 }
