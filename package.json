@@ -65,5 +65,8 @@
   },
   "lint-staged": {
     "**/*.{js,ts,jsx,tsx,md,json}": "npx prettier --write"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
