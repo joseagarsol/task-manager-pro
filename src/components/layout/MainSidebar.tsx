@@ -26,6 +26,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 export default function MainSidebar() {
   const { isMobile } = useSidebar();
@@ -123,7 +124,10 @@ export default function MainSidebar() {
                     <User className="mr-2 size-4" />
                     Mi Perfil
                   </button>
-                  <button className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                  <button
+                    onClick={() => signOut()}
+                    className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                  >
                     <LogOut className="mr-2 size-4" />
                     Cerrar Sesión
                   </button>
