@@ -19,6 +19,12 @@ enum Priority {
   Low
 }
 
+enum Role {
+  Owner
+  Editor
+  Viewer
+}
+
 model Task {
   id String @id @default(cuid())
   title String
@@ -28,6 +34,12 @@ model Task {
   createdAt DateTime @default(now())
   estimatedAt DateTime
   columnOrder Int
+  board Board @relation(fields: [boardId], references: [id])
+  boardId String
+  author User @relation("TaskAuthor",fields: [authorId], references: [id])
+  authorId String
+  assignee User? @relation("TaskAssignee",fields: [assigneeId], references: [id])
+  assigneeId String?
 }
 
 model User {
@@ -36,4 +48,26 @@ model User {
   name String
   password String
   createdAt DateTime @default(now())
+  boards BoardMember[]
+  authoredTasks Task[] @relation("TaskAuthor")
+  assignedTasks Task[] @relation("TaskAssignee")
+}
+
+model Board {
+  id String @id @default(cuid())
+  title String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members BoardMember[]
+  tasks Task[]
+
+}
+
+model BoardMember {
+  user User @relation(fields: [userId], references: [id])
+  userId String
+  board Board @relation(fields: [boardId], references: [id])
+  boardId String
+  role Role 
+  @@id([userId, boardId])
 }
