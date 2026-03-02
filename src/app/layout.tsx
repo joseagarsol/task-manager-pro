@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import MainSidebar from "@/components/layout/MainSidebar";
+import { Separator } from "@/components/ui/separator";
+import { AuthProvider } from "@/components/providers/session-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +31,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AuthProvider>
+          <SidebarProvider>
+            <MainSidebar />
+            <SidebarInset>
+              <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+              </header>
+              <div className="flex flex-1 flex-col gap-4 p-4">
+                <div className="flex h-full flex-col gap-4">{children}</div>
+              </div>
+            </SidebarInset>
+          </SidebarProvider>
+        </AuthProvider>
       </body>
     </html>
   );
