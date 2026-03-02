@@ -51,6 +51,7 @@ model User {
   boards BoardMember[]
   authoredTasks Task[] @relation("TaskAuthor")
   assignedTasks Task[] @relation("TaskAssignee")
+  image String?
 }
 
 model Board {
